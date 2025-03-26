@@ -1,0 +1,1 @@
+# asa-bot-oricon-service
