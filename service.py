@@ -7,16 +7,25 @@ date = date.today() - timedelta(days = 1)
 #p/1/
 url = "https://www.oricon.co.jp/rank/js/d/" + date.strftime("%Y-%m-%d") + "/"
 
+session = requests.Session()
+
 def parsePage(url):
     result = []
-    html = requests.get(url).content
-    soup = BeautifulSoup(html, "html.parser")
-    sections = soup.find_all("section")
-    for section in sections:
-        data = section.find("div", class_="inner")
-        title = data.find("div").find("h2").text.strip()
-        artist = data.find("div").find("p").text.strip()
-        result.append(title + " - " + artist)
+
+    response = session.get(url)
+    if response.status_code != 200:
+        return result
+    
+    soup = BeautifulSoup(response.content, "html.parser")
+
+    for section in soup.select("section"):
+        data = section.select_one(".inner")
+        if not data:
+            continue
+
+        title = data.select_one("h2").get_text(strip=True)
+        artist = data.select_one("p.name").get_text(strip=True)
+        result.append(f"{artist} - {title}")
     return result
 
 def parseDay():
@@ -26,3 +35,5 @@ def parseDay():
     
     return tracks
 
+test = parseDay()
+print("\n".join(test))
